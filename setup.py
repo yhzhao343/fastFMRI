@@ -8,7 +8,7 @@ setup(
     version="1.0.0",
     author="Yuhui Zhao",
     author_email="yhzhao343@gmail.com",
-    # url='https://github.com/yhzhao343/brainbraille_helpers',
+    url='https://github.com/yhzhao343/fastFMRI',
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     zip_safe=False,
