@@ -3,7 +3,6 @@ import cc3d
 from itertools import combinations
 from .file_helpers import load_bold_image
 
-
 def connected_component_clean(activation_mask, discard_size_ratio=0.5):
     cleaned_activation_mask = np.zeros(activation_mask.shape, dtype=bool)
     activation_mask_cc, N = cc3d.connected_components(activation_mask, return_N=True)
@@ -119,6 +118,13 @@ def get_base_calibration_roi(roi_mask, motor_mask):
     base_calibration_mask = np.all(not_roi_mask, axis=-1)
     base_calibration_mask = np.logical_and(base_calibration_mask, motor_mask)
     return base_calibration_mask
+
+
+def extract_from_4d_data_using_3d_mask(bold_image, mask):
+    flatten_bold_image = np.zeros((np.sum(mask), bold_image.shape[-1]), dtype=np.float64)
+    for i in range(flatten_bold_image.shape[1]):
+        flatten_bold_image[:, i] = bold_image[mask, i]
+    return flatten_bold_image
 
 
 def extract_data_from_bold_image(bold_image, mask, calibration_mask):
