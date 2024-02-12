@@ -126,6 +126,9 @@ def extract_from_4d_data_using_3d_mask(bold_image, mask):
         flatten_bold_image[:, i] = bold_image[mask, i]
     return flatten_bold_image
 
+def extract_from_4d_data_path_using_3d_mask(bold_iamge_path, mask):
+    bold_image = load_bold_image(bold_iamge_path)
+    return extract_from_4d_data_using_3d_mask(bold_image, mask)
 
 def extract_data_from_bold_image(bold_image, mask, calibration_mask):
     extracted_data = np.stack(
