@@ -3,6 +3,7 @@ import cc3d
 from itertools import combinations
 from .file_helpers import load_bold_image
 
+
 def connected_component_clean(activation_mask, discard_size_ratio=0.5):
     cleaned_activation_mask = np.zeros(activation_mask.shape, dtype=bool)
     activation_mask_cc, N = cc3d.connected_components(activation_mask, return_N=True)
@@ -121,14 +122,18 @@ def get_base_calibration_roi(roi_mask, motor_mask):
 
 
 def extract_from_4d_data_using_3d_mask(bold_image, mask):
-    flatten_bold_image = np.zeros((np.sum(mask), bold_image.shape[-1]), dtype=np.float64)
+    flatten_bold_image = np.zeros(
+        (np.sum(mask), bold_image.shape[-1]), dtype=np.float64
+    )
     for i in range(flatten_bold_image.shape[1]):
         flatten_bold_image[:, i] = bold_image[mask, i]
     return flatten_bold_image
 
+
 def extract_from_4d_data_path_using_3d_mask(bold_iamge_path, mask):
     bold_image = load_bold_image(bold_iamge_path)
     return extract_from_4d_data_using_3d_mask(bold_image, mask)
+
 
 def extract_data_from_bold_image(bold_image, mask, calibration_mask):
     extracted_data = np.stack(
@@ -312,3 +317,57 @@ def get_aggregated_roi(
 def extract_data_from_nifty(bold_image_path, mask, calibration_mask):
     bold_image = load_bold_image(bold_image_path)
     return extract_data_from_bold_image(bold_image, mask, calibration_mask)
+
+
+def get_roi_from_flatten_t(
+    flatten_t,
+    mask,
+    t_threshold_quantile=0.98,
+    cc_discard_size_ratio=0.5,
+    no_overlap=True,
+    num_contrast_to_keep=6,
+):
+    threshold = [
+        np.quantile(t_i[t_i > 0], t_threshold_quantile)
+        for t_i in flatten_t[:, :num_contrast_to_keep].T
+    ]
+    roi_mask = np.zeros(mask.shape + (num_contrast_to_keep,), dtype=bool)
+    roi_mask[mask, :] = flatten_t[:, :num_contrast_to_keep] > threshold
+    for i in range(num_contrast_to_keep):
+        roi_mask[:, :, :, i] = connected_component_clean(
+            roi_mask[:, :, :, i], cc_discard_size_ratio
+        )
+    flatten_roi_mask = roi_mask[mask, :]
+    if no_overlap:
+        for i_1, i_2 in combinations(range(num_contrast_to_keep), 2):
+            flatten_roi_mask[:, i_1], flatten_roi_mask[:, i_2] = delete_overlap(
+                flatten_roi_mask[:, i_1], flatten_roi_mask[:, i_2]
+            )
+    return flatten_roi_mask
+
+
+def get_calib_roi_from_flatten_roi(flatten_roi):
+    return np.all(np.logical_not(flatten_roi), axis=-1)
+
+
+def get_aggregated_roi_from_flatten(
+    roi_masks,
+    masks,
+    aggregation_threshold_quantile=0.8,
+    cc_discard_size_ratio=0.5,
+    no_overlap=True,
+):
+    unflatten_masks = [
+        np.zeros(mask.shape + (roi_mask.shape[1],), dtype=bool)
+        for roi_mask, mask in zip(roi_masks, masks)
+    ]
+    for i, (roi_mask, mask) in enumerate(zip(roi_masks, masks)):
+        unflatten_masks[i][mask] = roi_mask
+    aggregated_roi_mask = get_aggregated_roi(
+        unflatten_masks,
+        aggregation_threshold_quantile=aggregation_threshold_quantile,
+        cc_discard_size_ratio=cc_discard_size_ratio,
+        no_overlap=no_overlap,
+        no_overlap_tilL_n=unflatten_masks[0].shape[-1],
+    )
+    return aggregated_roi_mask
