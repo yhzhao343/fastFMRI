@@ -123,7 +123,7 @@ def get_base_calibration_roi(roi_mask, motor_mask):
 
 def extract_from_4d_data_using_3d_mask(bold_image, mask):
     flatten_bold_image = np.zeros(
-        (np.sum(mask), bold_image.shape[-1]), dtype=np.float64
+        (np.sum(mask), bold_image.shape[-1]), dtype=bold_image.dtype
     )
     for i in range(flatten_bold_image.shape[1]):
         flatten_bold_image[:, i] = bold_image[mask, i]
