@@ -130,8 +130,8 @@ def extract_from_4d_data_using_3d_mask(bold_image, mask):
     return flatten_bold_image
 
 
-def extract_from_4d_data_path_using_3d_mask(bold_iamge_path, mask):
-    bold_image = load_bold_image(bold_iamge_path)
+def extract_from_4d_data_path_using_3d_mask(bold_iamge_path, mask, dtype=np.float64):
+    bold_image = load_bold_image(bold_iamge_path, dtype)
     return extract_from_4d_data_using_3d_mask(bold_image, mask)
 
 

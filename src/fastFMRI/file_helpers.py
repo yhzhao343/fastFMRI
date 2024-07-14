@@ -263,14 +263,18 @@ def get_LETTERS_TO_DOT_from_processed_info(processed_bold_info):
     return LETTERS_TO_DOT
 
 
-def load_bold_image(bold_image_path):
+def load_bold_image(bold_image_path, dtype=np.float64):
     bold_image_handle = nib.load(bold_image_path)
-    return bold_image_handle.get_fdata(dtype=bold_image_handle.get_data_dtype())
+    if dtype is None:
+        dtype = bold_image_handle.get_data_dtype()
+    return bold_image_handle.get_fdata(dtype=dtype)
 
 def load_bold_header(bold_image_path):
     bold_image_handle = nib.load(bold_image_path)
     return bold_image_handle.header
 
-def load_bold_image_and_header(bold_image_path):
+def load_bold_image_and_header(bold_image_path, dtype=np.float64):
     bold_image_handle = nib.load(bold_image_path)
-    return bold_image_handle.get_fdata(dtype=bold_image_handle.get_data_dtype()), bold_image_handle.header
+    if dtype is None:
+        dtype = bold_image_handle.get_data_dtype()
+    return bold_image_handle.get_fdata(dtype=dtype, bold_image_handle.header
