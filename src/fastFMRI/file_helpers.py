@@ -277,4 +277,4 @@ def load_bold_image_and_header(bold_image_path, dtype=np.float64):
     bold_image_handle = nib.load(bold_image_path)
     if dtype is None:
         dtype = bold_image_handle.get_data_dtype()
-    return bold_image_handle.get_fdata(dtype=dtype, bold_image_handle.header
+    return bold_image_handle.get_fdata(dtype=dtype), bold_image_handle.header
